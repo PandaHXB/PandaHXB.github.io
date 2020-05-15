@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+
+	
+	<meta name="viewport" content="width=device-width, minimum-scale=0.5, maximum-scale=1, initial-scale=1">
+
+	<title>WiFi Router</title>
+	<link rel="stylesheet" href="style/rutledge_font/font.css?rev=f59b2c26c270c2b98a4374bf5d353655">
+	<script>
+		/**Add by james.wang 2017-8-22 start**/
+		if (top != self) {
+			top.location = self.location
+		}
+		/**Add by james.wang 2017-8-22 end**/
+		var is_test = 0,
+			jquery_path = is_test == 1 ? '' : '/';
+		document.write('<script type="text/javascript" src="' +jquery_path + 'script/lib/jquery-1.12.4.min.js"><\/script>');
+	</script>
+	
+	<script type="text/javascript" src="script/common.js?rev=51622ce35a6f3fea4f494b3e827c6675"></script>
+    <script type="text/javascript" src="script/login.js?rev=c37484c5b39f3c3ffcaeda562bc3c4f3"></script>
+    <link rel="stylesheet" href="style/login.css?rev=0fc851bc95ac35c5e7d921e262a8dc54">
+</head>
+<body>
+	<div id="login-wrapper">
+		<div id="header">
+			<img id="logo" src="img/logo.png?rev=d78e02a510a6460a0b8f9f42fbca057f">
+			<select name="language" id="language">
+				<option value="en" data-lang-tx="tx_en"></option>
+				<option value="zh-tw" data-lang-tx="tx_zh-tw"></option>
+				<option value="zh-cn" data-lang-tx="tx_zh-cn"></option>
+				
+			</select>
+		</div>
+		<div id="login-bg">
+			<div id="product-name-wrapper">
+				
+				<h1 id="product-name" data-lang-tx="tx_pid"></h1>
+			</div>
+		</div>
+		<div id="content-wrapper">
+			<div id="err"></div>
+			<table id="login-content">
+				<tr>
+					<td>
+						<label for="username" data-lang-tx="tx_usrname"></label>
+					</td>
+					<td class="td-input">
+						
+                        <input id="username" type="text">
+					</td>
+				</tr>
+				<tr>
+					<td>
+                        <label for="password" data-lang-tx="tx_pwd"></label>
+                    </td>
+					<td class="td-input">
+                        <input type="password" id="password">
+                    </td>
+				</tr>
+			</table>
+			<div class="login-content-row">
+				<button id="login-btn" data-lang-tx="tx_login"></button>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="script/jquery-md5.js?rev=8177a4f468b58a79687e752ef4cb8c67"></script>
+<script type="text/javascript">
+	$(function(){
+		$.ajax({
+			// 请求根目录下的cgi
+			url: (is_test == 1 ?  'test' : '/cgi-bin') + '/GetLatestVersion',
+			type: 'POST',
+			dataType: 'json',
+			contentType: 'application/json',
+			data: JSON.stringify({}),
+			cache:false
+		}).done(function(jsonData){
+			var path_arr = location.pathname.split("/");
+			if(is_test != 1 && path_arr[1] != jsonData["Version"]){
+				// 将路径中的版本号部分替换为最新的版本号
+				path_arr[1] = jsonData["Version"];
+				location.href = location.protocol + "//" + location.host + path_arr.join("/");
+			} else {
+				// 用户名输入框默认获得焦点
+				$('#username').focus();
+				Ajax.GetJsonData({
+					path: "GetRedirectAction",
+					suc_func: function(data){
+						// 登录ip为192.168.1.1，并且后台返回值为0，则跳转
+						if(location.hostname == '192.168.1.1' && data['action'] == 0){
+							location.href = 'http://www.charter.net';
+						} else {
+							//获取语言类型
+							Router.getLangType(function(langType){
+								LoginPage.langType = langType;
+								LoginPage.Event.initLangselect();
+							});
+
+							//获取多语言
+							Router.getLang(function(langMap) {
+								LoginPage.langMap = langMap;
+								LoginPage.initLang();
+								//事件绑定
+								LoginPage.addListener();
+							})
+						}
+					}
+				});
+			}
+		});
+	});
+</script>
+</html>
